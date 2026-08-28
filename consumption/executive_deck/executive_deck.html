@@ -59,7 +59,7 @@
     <tr><td style="padding:3pt 26pt 3pt 0;"><b>Cliente (simulado)</b></td>
         <td style="padding:3pt 0;">Instituição financeira de grande porte — expansão de Dados, Analytics e IA</td></tr>
     <tr><td style="padding:3pt 26pt 3pt 0;"><b>Data</b></td>
-        <td style="padding:3pt 0;">Julho de 2026</td></tr>
+        <td style="padding:3pt 0;">Agosto de 2026</td></tr>
   </table>
 </div>
 
@@ -175,7 +175,7 @@
         </ul>
         <div class="sowhat">
           <b>Por que confiar nos números</b>
-          <span>Premissas versionadas (P1–P7) e pipeline reexecutável: qualquer terceiro chega aos mesmos resultados.</span>
+          <span>Premissas versionadas (P1–P8) e pipeline reexecutável: qualquer terceiro chega aos mesmos resultados.</span>
         </div>
       </td>
     </tr>
@@ -195,7 +195,7 @@
     <b>Implicação para o cliente</b>
     <span>Esta arquitetura é o <b>blueprint mínimo</b> da plataforma recomendada: S3 (Bronze/Silver/Gold), Glue Jobs em PySpark, Glue Data Catalog e Athena — com criptografia SSE-S3, Block Public Access e menor privilégio desde o primeiro dia.</span>
   </div>
-  <div class="rodape">Camada Gold com 20 tabelas analíticas · particionamento por ano · consultas SQL serverless no Athena</div>
+  <div class="rodape">Camada Gold com 21 tabelas analíticas · particionamento por ano · consultas SQL serverless no Athena</div>
 </div>
 
 <!-- ============ 7 · Q1 MERCADO ============ -->
@@ -424,7 +424,7 @@
       </td>
       <td width="44%">
         <ul>
-          <li><b>Quatro leituras intuitivas foram testadas contra os dados; três foram refutadas e reescritas</b> — o registro completo está na Seção 13.4 do relatório técnico.</li>
+          <li><b>Seis leituras intuitivas foram testadas contra os dados; quatro foram refutadas e reescritas</b> — o registro completo está na Seção 13.4 do relatório técnico.</li>
           <li>Exemplo: o prêmio salarial por cargo foi <b>revalidado com controle de senioridade</b>, e a suposta vantagem da Engenharia sobre a Ciência de Dados mostrou-se efeito de composição.</li>
           <li><b>Amostra por conveniência</b>, sem pesos: descreve os respondentes, não o universo do país.</li>
           <li><b>Viés de seleção e de autorresposta:</b> comunidade online engajada tende a superestimar a adoção de tecnologias novas.</li>
@@ -466,7 +466,7 @@
         <ul>
           <li><b>A1</b> — EDA e qualidade dos dados (preenchimento e nulos estruturais)</li>
           <li><b>A2</b> — Métricas do pipeline (22.686 linhas, zero descartes)</li>
-          <li><b>A3</b> — Premissas versionadas P1–P7 e de-para de colunas</li>
+          <li><b>A3</b> — Premissas versionadas P1–P8 e de-para de colunas</li>
           <li><b>A4</b> — Gráficos complementares (senioridade, salário por cargo, participação feminina, clouds, BI, regiões, prioridade de IA)</li>
           <li><b>A5</b> — Evidências de execução na AWS (E01–E08)</li>
           <li><b>A6</b> — Notebooks 01–05, Glue Jobs e diagrama Draw.io</li>

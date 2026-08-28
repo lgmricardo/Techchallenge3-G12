@@ -31,15 +31,18 @@ Techchallenge3-G12/
 ├── datalake/                          CAMADAS DE DADOS (espelha o prefixo s3://<bucket>/datalake/)
 │   ├── bronze/ano=YYYY/               6 CSVs originais, brutos e imutáveis (versionados — dataset fixo)
 │   ├── silver/                        Parquet harmonizado — gerado pelo Job 1
-│   └── gold/csv/                      20 tabelas analíticas agregadas (versionadas)
+│   └── gold/csv/                      21 tabelas analíticas agregadas (versionadas)
 ├── src/                               CÓDIGO DO PIPELINE
-│   ├── config/                        column_mapping.json + versioned_assumptions.md (P1–P7)
+│   ├── config/                        column_mapping.json + versioned_assumptions.md (P1–P8)
 │   ├── jobs/                          job_01_bronze_to_silver.py · job_02_silver_to_gold.py
 │   ├── notebooks/                     01_bronze_ingestion … 05_gold_analytics (executados)
 │   └── README.md                      documentação técnica do pipeline
 ├── consumption/                       CAMADA DE CONSUMO (o que a Gold alimenta)
 │   ├── charts/                        15 gráficos G01–G15 (PNG), gerados pelo notebook 05
-│   └── executive_deck/                deck executivo em HTML + imagens
+│   ├── executive_deck/                deck executivo em HTML + PPTX + imagens
+│   ├── streamlit_app/                 dataviz interativo — replica os 15 gráficos (Streamlit)
+│   └── streamlit_dashboard/           board analítico avançado — mapa coroplético, gauges,
+│                                       sunburst, funil, heatmap, radar (Streamlit + Plotly)
 ├── architecture/                      diagrama AWS: .drawio editável + PNG
 ├── docs/                              relatório técnico, guia AWS, roteiro de arguição, padrão visual
 ├── evidence/                          prints de execução no AWS Academy Lab (E01–E08)
@@ -71,21 +74,23 @@ A chave de partição `ano=YYYY` e os nomes de coluna (`ano`, `cargo_grupo`, `sa
 são mantidos em português por serem **contrato de dado**: aparecem no DDL do Athena
 (`PARTITIONED BY (ano int)`), no cabeçalho dos CSVs entregues e nos rótulos do relatório técnico.
 
-## 🥇 Camada Gold — 20 tabelas × pergunta de negócio
+## 🥇 Camada Gold — 21 tabelas × pergunta de negócio
 
 | Pergunta | Tabelas (`datalake/gold/csv/`) |
 |---|---|
 | 1. Estrutura do mercado | `gold_respondents` · `gold_roles` · `gold_seniority` |
 | 2. Perfis valorizados | `gold_salary_by_seniority` · `gold_salary_by_role` · `gold_salary_by_role_seniority` |
-| 3. Diversidade de gênero | `gold_gender_participation` · `gold_gender_seniority_salary` · `gold_gender_leadership` |
+| 3. Diversidade de gênero | `gold_gender_participation` · `gold_gender_seniority_salary` · `gold_gender_leadership` · `gold_gender_role_seniority` |
 | 4. Tecnologias | `gold_technologies` |
-| 5. Adoção de IA | `gold_ai_priority` · `gold_genai_usage` |
+| 5. Adoção de IA | `gold_ai_priority` · `gold_genai_usage` · `gold_genai_usage_by_seniority` |
 | 6. Regiões e modelos de trabalho | `gold_regions` · `gold_regions_by_seniority` · `gold_work_model` |
 | 7. Oportunidades e desafios | `gold_market_pulse` · `gold_job_change_intent` · `gold_job_criteria` · `gold_manager_challenges` |
 
-`gold_salary_by_role_seniority` e `gold_regions_by_seniority` materializam o controle por nível Sênior
-usado na Seção 6.3/Tabela 11 e na Seção 10.1 do relatório técnico — adicionadas para que esses números
-tenham origem rastreável no pipeline (antes eram cálculos ad hoc sem registro em nenhum notebook).
+`gold_salary_by_role_seniority`, `gold_regions_by_seniority`, `gold_gender_role_seniority` e
+`gold_genai_usage_by_seniority` materializam o controle por nível Sênior usado na Seção 6.3/Tabela 11,
+na Seção 10.1, na Seção 7.4 (Causa 1 e 2) e na Seção 9.2 do relatório técnico — adicionadas para que
+esses números tenham origem rastreável no pipeline (antes eram cálculos ad hoc sem registro em nenhum
+notebook).
 
 **Conversão do Material Executivo:** abrir o HTML no navegador → Ctrl+P → salvar como PDF
 (layout paisagem); ou abrir no Microsoft Word e salvar como DOCX. As imagens devem permanecer
@@ -96,10 +101,10 @@ do Word para o Sumário, o Índice de Figuras, o Índice de Tabelas e a numeraç
 (`SEQ Tabela`/`SEQ Figura`). Enquanto não forem atualizados, os índices saem vazios e a numeração
 das legendas fica desatualizada (aparece um "Tabela 11" repetido). Antes de exportar:
 
-1. abrir `docs/technical_report_phase3.docx` no Word;
+1. abrir `docs/technical_report_phase3_v1.docx` no Word;
 2. **Ctrl+A** e depois **F9** (no macOS, `fn+F9`) — confirmar "Atualizar índice inteiro" quando perguntado;
 3. conferir que Sumário e os dois índices ficaram preenchidos e que as legendas vão de 1 a 20 sem repetição;
-4. **Arquivo → Salvar como / Exportar → PDF**, sobrescrevendo `docs/technical_report_phase3.pdf`.
+4. **Arquivo → Salvar como / Exportar → PDF**, sobrescrevendo `docs/technical_report_phase3_v1.pdf`.
 
 ---
 
@@ -108,7 +113,7 @@ das legendas fica desatualizada (aparece um "Tabela 11" repetido). Antes de expo
 ```text
 Kaggle (6 CSVs) → S3 BRONZE (ano=YYYY, imutável)
                 → Glue Job 1 (PySpark): de-para + harmonização + salário PM → S3 SILVER (Parquet)
-                → Glue Job 2 (PySpark): agregações temáticas → S3 GOLD (20 tabelas)
+                → Glue Job 2 (PySpark): agregações temáticas → S3 GOLD (21 tabelas)
                 → Glue Data Catalog → Amazon Athena (Q1–Q7) → CONSUMPTION (gráficos + deck)
 ```
 

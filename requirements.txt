@@ -6,6 +6,15 @@ matplotlib==3.11.1      # gráficos G01–G15
 notebook==7.6.2         # execução interativa dos notebooks 01–05
 nbclient==0.11.0        # execução headless (reprodutibilidade)
 
+# --- Dataviz interativo (consumption/streamlit_app/) ---
+streamlit==1.62.0
+fpdf2==2.8.8            # export_pdf.py — snapshot em PDF do resultado do app
+
+# --- Board interativo avançado (consumption/streamlit_dashboard/) ---
+plotly==7.0.0            # gauges, mapa coroplético, sunburst, funil, heatmap, radar
+kaleido==1.3.0            # export_pdf.py — renderiza cada gráfico Plotly como PNG estático
+pillow==12.3.0            # export_pdf.py — mede as imagens exportadas para montar o layout do PDF
+
 # --- Não utilizados pelo pipeline atual; manter apenas se for estender a análise ---
 scikit-learn==1.9.0
 seaborn==0.13.2

@@ -24,7 +24,7 @@ Antes de tirar qualquer print, confirme que:
 ## E01 — Learner Lab funcionando + Console us-east-1
 
 **Requisito:** R2 (ambiente AWS demonstrado)
-**Arquivo:** `evidence/E01_learner_lab_console.png`
+**Arquivos:** `evidence/E01a_vocareum_lab_ativo.png` (Vocareum) + `evidence/E01b_console_us_east_1.png` (Console us-east-1)
 
 ### O que fazer
 
@@ -140,7 +140,7 @@ Antes de tirar qualquer print, confirme que:
 ## E04 — Glue Job 1 criado e com execução Succeeded
 
 **Requisito:** R4 (ETL PySpark documentado) e R7 (execução demonstrada)
-**Arquivos:** `evidence/E04a_glue_job1_script.png` (script) + `evidence/E04_1a_glue_job1_script.png` (execução Succeeded)
+**Arquivos:** `evidence/E04a_glue_job1_script.png` (script) + `evidence/E04b_glue_job1_succeeded.png` (execução Succeeded)
 
 ### O que fazer
 
@@ -206,7 +206,7 @@ O ideal é **um único print** que mostre as duas coisas: o script aberto e a ex
 ## E05 — Glue Job 2 com execução Succeeded
 
 **Requisito:** R4 e R7
-**Arquivos:** `evidence/E05_1a_glue_job2_script.png` + `evidence/E05a_glue_job2_script.png` (script) + `evidence/E05b_glue_job2_succeeded.png` (execução Succeeded)
+**Arquivos:** `evidence/E05a_glue_job2_script.png` (script) + `evidence/E05b_glue_job2_succeeded.png` (execução Succeeded)
 
 ### O que fazer
 
@@ -215,7 +215,7 @@ O ideal é **um único print** que mostre as duas coisas: o script aberto e a ex
 1. Repita os mesmos passos do E04, mas usando o arquivo `src/jobs/job_02_silver_to_gold.py`.
 2. Configurações idênticas ao Job 1, exceto o **Name**: `job_02_silver_to_gold`.
 3. O parâmetro `--BUCKET` é o **mesmo bucket** do Job 1.
-4. Clique em **Save** → **Run** → aguarde **Succeeded** (pode demorar 8–15 minutos — este job faz 17 agregações).
+4. Clique em **Save** → **Run** → aguarde **Succeeded** (pode demorar 8–15 minutos — este job grava 21 tabelas agregadas).
 
 #### Tirar o print E05
 
@@ -245,7 +245,7 @@ Após os dois jobs com Succeeded, navegue no S3 para confirmar que as camadas fo
 #### Verificar Gold
 
 1. Volte para `datalake/` → `gold/`.
-2. Devem existir pastas para as 20 tabelas: `gold_respondents/`, `gold_roles/`, `gold_seniority/`, etc.
+2. Devem existir pastas para as 21 tabelas: `gold_respondents/`, `gold_roles/`, `gold_seniority/`, etc.
 3. Também deve existir `gold/csv/` com os CSVs das tabelas agregadas.
 
 #### Tirar os prints E06
@@ -376,17 +376,33 @@ Clique **Run query** → aguarde "Completed" → tire o print.
 #### Q2 — Escada salarial (mediana por senioridade)
 
 ```sql
-SELECT ano, nivel, COUNT(*) AS n,
-       ROUND(APPROX_PERCENTILE(salario_pm, 0.5), 0) AS salario_mediano_pm
-FROM stateofdata.silver_core
-WHERE salario_pm IS NOT NULL AND nivel IS NOT NULL
+WITH ranked AS (
+    SELECT ano, nivel, salario_pm,
+           ROW_NUMBER() OVER (PARTITION BY ano, nivel ORDER BY salario_pm) AS rn,
+           COUNT(*) OVER (PARTITION BY ano, nivel) AS cnt
+    FROM stateofdata.silver_core
+    WHERE salario_pm IS NOT NULL AND nivel IS NOT NULL
+)
+SELECT ano, nivel, MAX(cnt) AS n,
+       ROUND(AVG(salario_pm), 0) AS salario_mediano_pm
+FROM ranked
+WHERE rn IN (CAST((cnt+1)/2 AS INTEGER), CAST((cnt+2)/2 AS INTEGER))
 GROUP BY ano, nivel
 ORDER BY ano, salario_mediano_pm;
 ```
 
+> **Atenção — não use `APPROX_PERCENTILE(salario_pm, 0.5)` aqui.** O Athena (Trino) usa um T-digest de
+> baixa precisão por padrão, que pode divergir da mediana real quando `salario_pm` tem muitos valores
+> repetidos (é o ponto médio de faixas salariais, não um valor contínuo) — ex.: para 2023×Sênior ele
+> retornava R$ 11.498 em vez dos R$ 10.001 corretos, mesmo com `n` idêntico (1.419), uma diferença de
+> aproximação e não de filtro. O PySpark (`percentile_approx` do Job 2, `04_athena_queries.ipynb`) usa
+> precisão muito maior por padrão e não tem esse problema. A query acima calcula a mediana exata via
+> `ROW_NUMBER`, batendo com o `gold_salary_by_seniority.csv` e o relatório em todas as células.
+
 **O que deve aparecer no print E08_athena_q2.png:**
 - Colunas: `ano`, `nivel`, `n`, `salario_mediano_pm`
 - Resultados mostrando variação de salário por senioridade ao longo dos anos
+- Valores batendo com `gold_salary_by_seniority.csv` (ex.: 2023×Sênior = 10001, não 11498)
 
 ---
 
@@ -519,11 +535,12 @@ ORDER BY ano;
 
 Após todos os prints:
 
-- [ ] `evidence/E01_learner_lab_console.png` — Vocareum verde + Console us-east-1
+- [ ] `evidence/E01a_vocareum_lab_ativo.png` — Vocareum verde
+- [ ] `evidence/E01b_console_us_east_1.png` — Console us-east-1
 - [ ] `evidence/E02_bucket_block_public_access.png` — Aba Permissions com Block Public Access On
 - [ ] `evidence/E03_s3_bronze_6_edicoes.png` — 6 pastas `ano=YYYY` em `bronze/`
-- [ ] `evidence/E04a_glue_job1_script.png` + `evidence/E04_1a_glue_job1_script.png` — Job 1: script e status Succeeded
-- [ ] `evidence/E05_1a_glue_job2_script.png` + `evidence/E05a_glue_job2_script.png` + `evidence/E05b_glue_job2_succeeded.png` — Job 2: script e status Succeeded
+- [ ] `evidence/E04a_glue_job1_script.png` + `evidence/E04b_glue_job1_succeeded.png` — Job 1: script e status Succeeded
+- [ ] `evidence/E05a_glue_job2_script.png` + `evidence/E05b_glue_job2_succeeded.png` — Job 2: script e status Succeeded
 - [ ] `evidence/E06a_s3_silver.png` + `evidence/E06b_s3_gold.png` — Pastas `silver/` e `gold/` no S3
 - [ ] `evidence/E07_glue_catalog_tabelas.png` — Database `stateofdata` com tabelas
 - [ ] `evidence/E08_athena_q1.png` até `E08_athena_q7.png` — 7 queries com resultados
@@ -541,7 +558,7 @@ Após coletar tudo: clique em **End Lab** no Vocareum para encerrar a sessão (o
 | E03 | R1, R3 | 6 edições ingeridas na camada Bronze particionada por ano |
 | E04 | R4, R7 | Job PySpark Bronze→Silver executado com sucesso |
 | E05 | R4, R7 | Job PySpark Silver→Gold executado com sucesso |
-| E06 | R5 | Camadas Silver (Parquet) e Gold (20 tabelas) geradas no S3 |
+| E06 | R5 | Camadas Silver (Parquet) e Gold (21 tabelas) geradas no S3 |
 | E07 | R4 | Glue Data Catalog com tabelas catalogadas para o Athena |
 | E08 | R6 | 7 perguntas de negócio respondidas com queries SQL nos dados reais |
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """AWS GLUE JOB | Tech Challenge Fase 3 — State of Data Brasil
-Job 2: Silver -> Gold (20 tabelas analiticas agregadas)
+Job 2: Silver -> Gold (21 tabelas analiticas agregadas)
 
 COMO IMPLANTAR NO AWS ACADEMY LAB:
   1. Console AWS -> Glue -> ETL Jobs -> Script editor -> colar este arquivo.
@@ -127,11 +127,15 @@ grava(gen_gestao.orderBy("ano", "genero"), "gold_gender_leadership")
 
 # G08b — Gênero × cargo, controlado por nível Sênior (Seção 7.4) ----------
 # Materializa o recorte que a Seção 7.4 usa para decompor o gap de gênero em composição de
-# cargo (Causa 1) — antes desta tabela, os números de §7.4 não tinham origem reproduzível em
-# nenhum artefato do pipeline.
+# cargo (Causa 1, via n/pct_do_genero) e em diferença residual dentro do mesmo cargo
+# (Causa 2, via salario_mediano_pm) — antes desta tabela, os números de §7.4 não tinham
+# origem reproduzível em nenhum artefato do pipeline.
 gen_cargo_sen = (core.filter((F.col("nivel") == "Sênior") & F.col("cargo_grupo").isNotNull()
                              & F.col("genero").isin("Masculino", "Feminino"))
-                  .groupBy("ano", "genero", "cargo_grupo").count().withColumnRenamed("count", "n"))
+                  .groupBy("ano", "genero", "cargo_grupo")
+                  .agg(F.count("*").alias("n"),
+                       F.count(F.when(F.col("salario_pm").isNotNull(), 1)).alias("n_salario"),
+                       F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 w = Window.partitionBy("ano", "genero")
 gen_cargo_sen = gen_cargo_sen.withColumn("pct_do_genero", F.round(100 * F.col("n") / F.sum("n").over(w), 1))
 grava(gen_cargo_sen.orderBy("ano", "genero", F.desc("n")), "gold_gender_role_seniority")
@@ -168,10 +172,28 @@ genai = tabela_tec(core, MODALIDADES, "genai").withColumnRenamed("tecnologia", "
 grava(genai.select("ano", "modalidade", "usuarios", "base_valida", "pct").orderBy("modalidade", "ano"),
       "gold_genai_usage")
 
+# G11b — Uso de GenAI, controlado por nível (Seção 9.2) --------------------
+# Materializa o corte por senioridade que a Seção 9.2 usa para checar se "empresa paga"
+# está concentrado em níveis mais seniores ou distribuído pela pirâmide inteira — antes
+# desta tabela, a Seção 9 (IA) era a única pergunta de negócio sem controle de composição.
+genai_nivel = None
+for modalidade, col in MODALIDADES.items():
+    t = (core.filter(F.col(col).isNotNull() & F.col("nivel").isNotNull())
+         .groupBy("ano", "nivel")
+         .agg(F.count("*").alias("base_valida"), F.sum(col).alias("usuarios"))
+         .withColumn("modalidade", F.lit(modalidade)))
+    genai_nivel = t if genai_nivel is None else genai_nivel.unionByName(t)
+genai_nivel = genai_nivel.withColumn("pct", F.round(100 * F.col("usuarios") / F.col("base_valida"), 1))
+grava(genai_nivel.select("ano", "nivel", "modalidade", "usuarios", "base_valida", "pct")
+      .orderBy("ano", "modalidade", "nivel"), "gold_genai_usage_by_seniority")
+
 # G12 — Regiões: distribuição e salário -----------------------------------
+# "n" é a base de distribuição regional (denominador do "%" — todos com região válida);
+# "n_salario" é a base real das colunas de salário, sempre <= n (Sec 5.1: 91,7% preenchida).
 reg = (core.filter(F.col("regiao").isNotNull() & (F.col("regiao") != ""))
        .groupBy("ano", "regiao")
        .agg(F.count("*").alias("n"),
+            F.count(F.when(F.col("salario_pm").isNotNull(), 1)).alias("n_salario"),
             # media do ponto medio: discrimina dentro da faixa, onde a mediana empata (Secao 10.1)
             F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm"),
             F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))

@@ -27,7 +27,7 @@ No AWS Academy **não se cria conta AWS própria nem se cadastra cartão**. A FI
 - 🔚 Ao terminar o dia, clique em **End Lab**.
 
 ✅ **Checkpoint:** Console AWS aberto, região us-east-1, timer rodando.
-📸 **Evidência E01:** print da tela do Learner Lab (timer + budget) e do Console com a região visível. *(Requisito R2)*
+📸 **Evidência E01:** print da tela do Learner Lab/Vocareum (timer + budget) com a sessão ativa. *(Requisito R2)*
 
 ---
 
@@ -79,7 +79,7 @@ No AWS Academy **não se cria conta AWS própria nem se cadastra cartão**. A FI
 Repita os passos com o arquivo `src/jobs/job_02_silver_to_gold.py`, nome `job_02_silver_to_gold` e o **mesmo parâmetro** `--BUCKET`. Rode **somente depois** do Job 1 dar Succeeded.
 
 ✅ **Checkpoint:** no S3 apareceram `datalake/silver/` (pastas `silver_core` e `silver_serie_longa` com arquivos `.parquet`) e `datalake/gold/` (20 pastas de tabelas + `csv/`).
-📸 **Evidências:** **E04** — script do Job 1 aberto + aba Runs com **Succeeded** *(R4 e R7)*; **E05** — Job 2 **Succeeded** *(R4 e R7)*; **E06** — S3 mostrando silver e gold com Parquet *(R5)*.
+📸 **Evidências:** **E04a/E04b** — script do Job 1 aberto + aba Runs com **Succeeded** *(R4 e R7)*; **E05a/E05b** — Job 2 **Succeeded** *(R4 e R7)*; **E06a/E06b** — S3 mostrando silver e gold com Parquet *(R5)*.
 
 ---
 
@@ -128,18 +128,18 @@ Se o grupo quiser evidência extra no Lab: Glue → **Notebooks** → Create (ro
 
 | Arquivo | O que mostra | Requisito |
 |---|---|---|
-| `E01_learner_lab_console.png` | Timer/budget do Lab + Console us-east-1 | R2 |
+| `E01a_vocareum_lab_ativo.png` | Timer/budget do Lab (Vocareum) | R2 |
 | `E02_bucket_block_public_access.png` | Block Public Access **On** | Segurança 8.1 |
 | `E03_s3_bronze_6_edicoes.png` | bronze/ano=YYYY com os 6 CSVs | R1, R3 |
-| `E04_glue_job1_succeeded.png` | Script + Run Succeeded (Job 1) | R4, R7 |
-| `E05_glue_job2_succeeded.png` | Run Succeeded (Job 2) | R4, R7 |
-| `E06_s3_silver_gold_parquet.png` | Camadas silver e gold no S3 | R5 |
+| `E04a_glue_job1_script.png` + `E04b_glue_job1_succeeded.png` | Script + aba Runs (Job 1) | R4, R7 |
+| `E05a_glue_job2_script.png` + `E05b_glue_job2_succeeded.png` | Script + Run Succeeded (Job 2) | R4, R7 |
+| `E06a_s3_silver.png` + `E06b_s3_gold.png` | Camadas silver e gold no S3 | R5 |
 | `E07_glue_catalog_tabelas.png` | Database `stateofdata` + tabelas | R4 |
 | `E08_athena_q1.png` … `E08_athena_q7.png` | SQL + resultado de cada query | R6 |
 
    *Como printar:* Windows `Win+Shift+S` · Mac `Cmd+Shift+4`. Capture a tela inteira (com a URL do console visível).
 2. Coloque a pasta `evidence/` **dentro do zip da Entrega 3** (junto de `src/notebooks/`, `src/jobs/`, `src/config/` e `consumption/charts/`).
-3. No **material executivo** (`consumption/executive_deck/executive_deck.html`): slide 6 (Arquitetura) recebe a frase *"Pipeline executado no AWS Academy Lab — evidências no Anexo"*; slide 17 (Anexos) recebe uma grade com as miniaturas E01–E08.
+3. O **material executivo** (`consumption/executive_deck/executive_deck.html`) já referencia a execução na AWS: slide 6 traz a legenda "executada no AWS Academy Lab" e slide 17 (Anexos) lista o bullet "A5 — Evidências de execução na AWS (E01–E08)".
 4. Marque na **Matriz 11.0** os requisitos R2, R3, R4, R5, R6 e R7 como ✅ com a referência do arquivo de evidência.
 
 ---

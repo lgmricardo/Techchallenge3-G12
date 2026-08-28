@@ -46,7 +46,11 @@ Sênior, a hierarquia de três patamares se mantém — logo o efeito de cargo �
 **O ponto forte:** o controle também nos fez **corrigir** uma conclusão. Na visão agregada, Ciência de
 Dados parecia valer menos que Engenharia; controlando por senioridade, as duas são idênticas em todos
 os níveis. A diferença bruta vinha só da composição. E descobrimos que a mediana agregada
-**subestima** o ML/AI Engineer, que atinge cerca de R$ 27.500 no nível Especialista/Staff+.
+**subestima** o ML/AI Engineer, que atinge cerca de R$ 27.500 no nível Especialista/Staff+ — **número de
+apoio, não headline**: esse recorte tem n = 27, abaixo do próprio corte de exibição da Premissa P8
+(n ≥ 30), e não está materializado em nenhuma tabela Gold. Se a banca pedir a fonte, é transparente
+dizer isso: o valor foi calculado ad hoc para checar a direção do viés, exatamente o tipo de número que
+P8 recomenda tratar com cautela.
 
 **Evidência:** Seção 6.3 · Tabela 11 · Seção 13.4 (linha 1).
 
@@ -78,7 +82,7 @@ edição — zero registros descartados. Se a contagem divergir, o job falha.
 
 ## 6. "Como compararam edições com esquemas de colunas diferentes?"
 
-**Resposta curta:** com um de-para versionado de cerca de 60 variáveis por edição, aplicado no Glue Job 1.
+**Resposta curta:** com um de-para versionado de 69 variáveis por edição, aplicado no Glue Job 1.
 A edição 2023 usa cabeçalhos em tupla; 2024 e 2025/26 usam notação hierárquica; e os códigos mudam de
 posição entre anos — a coluna de AWS, por exemplo, é 4.e.1 em 2025/26, 4.h.1 em 2024 e P4_h_2 em 2023.
 Nenhuma comparação é feita antes da harmonização.
@@ -145,7 +149,7 @@ recomendação da Seção 12 se apoia neles. E testamos se a série estaria queb
 rótulo: somando as marcações dos três provedores sobre a base válida, a densidade de resposta é
 praticamente idêntica — 104,5% em 2023 e 104,3% em 2024. A hipótese de quebra não se confirmou.
 
-**Evidência:** Seção 8.2 · Figura 10 · Tabela 19 (última linha).
+**Evidência:** Seção 8.2 · Figura 10 · Tabela 20 (última linha).
 
 ---
 
@@ -169,12 +173,12 @@ um grupo de 599 respondentes comunicaria uma precisão que o dado não tem.
 
 | Pergunta | Resposta |
 |---|---|
-| Quantas tabelas na camada Gold? | 20 tabelas analíticas, em Parquet e CSV. |
+| Quantas tabelas na camada Gold? | 21 tabelas analíticas, em Parquet e CSV. |
 | Por que Medallion? | Bronze imutável garante auditoria; Silver harmoniza; Gold serve consulta rápida. |
 | Por que Athena e não Redshift? | Serverless, sem cluster provisionado, custo por consulta — adequado ao volume e ao Lab. |
 | Por que mediana e não média? | Robustez à assimetria típica de distribuições salariais. |
 | Por que evitaram gráficos de pizza? | Acima de três categorias, a percepção de proporção por ângulo é ruim; usamos barras. |
-| Quem é o perfil mais bem pago? | ML/AI Engineer — R$ 18.001 na mediana geral e cerca de R$ 27.500 no topo. |
+| Quem é o perfil mais bem pago? | ML/AI Engineer — R$ 18.001 na mediana geral; cerca de R$ 27.500 no topo (n = 27, número de apoio, ver Q3). |
 | Qual o maior desafio dos gestores? | Dividir tempo entre entregas técnicas e gestão (36,3%). |
 | A participação feminina melhorou? | Não: pico de 24,8% em 2022, recuo para 22,0% em 2025/26. |
 

@@ -36,7 +36,7 @@ Kaggle (CSVs) ──upload──▶ S3 BRONZE (bruto, imutável, ano=YYYY)
                           └── silver_serie_longa   (2019–2025/26, colunas mínimas)
                               │  Glue Job 2 (PySpark): agregações por tema
                               ▼
-                          S3 GOLD (Parquet + CSV) — 20 tabelas analíticas
+                          S3 GOLD (Parquet + CSV) — 21 tabelas analíticas
                               │  Glue Data Catalog (Crawler ou DDL)
                               ▼
                      Amazon Athena / Glue Notebook (SQL)
@@ -68,8 +68,8 @@ src/
 ├── README.md                        ← este arquivo
 ├── notebooks/                       ← ENTREGA 3 (executados, com resultados reais)
 │   ├── 01_bronze_ingestion.ipynb    ← Bronze: ingestão + reconciliação de volumetria
-│   ├── 02_bronze_to_silver.ipynb    ← de-para, normalizações, premissas P1–P7
-│   ├── 03_silver_to_gold.ipynb      ← 20 tabelas Gold × 7 perguntas de negócio
+│   ├── 02_bronze_to_silver.ipynb    ← de-para, normalizações, premissas P1–P8
+│   ├── 03_silver_to_gold.ipynb      ← 21 tabelas Gold × 7 perguntas de negócio
 │   ├── 04_athena_queries.ipynb      ← 7 consultas SQL (Athena-ready) + DDL de catalogação
 │   └── 05_gold_analytics.ipynb      ← 15 gráficos executivos (com fonte e n)
 ├── jobs/                            ← REQUISITO R4 (colar no console Glue)
@@ -77,7 +77,7 @@ src/
 │   └── job_02_silver_to_gold.py
 └── config/
     ├── column_mapping.json          ← de-para versionado 2019–2025/26
-    └── versioned_assumptions.md     ← premissas P1–P7 aprovadas pelo time
+    └── versioned_assumptions.md     ← premissas P1–P8 aprovadas pelo time
 
 ../datalake/                         ← bronze/ silver/ gold/ (camadas Medallion; espelha o S3)
 ../consumption/charts/               ← 15 PNGs prontos para o material executivo
@@ -121,7 +121,7 @@ de `src/jobs/`; no Glue, o parâmetro `--BUCKET` substitui a base local por `s3:
 | R6 | 7 consultas SQL Athena-ready executadas (`04_athena_queries`) |
 | R7 | PySpark em todo o processamento (notebooks 02–04 e Glue Jobs) |
 | R8 | 15 gráficos com fonte, edição e n (`05_gold_analytics`, `../consumption/charts/`) |
-| R9 | Diagrama final em `../architecture/` (.drawio editável + PNG); esquema de referência na Seção 2.2 |
+| R9 | Diagrama final em `../architecture/` (.drawio editável + PNG); esquema de referência na Seção 3.1 |
 | R10 | Gráficos + achados prontos para o material executivo |
 | R11 | Este repositório consolidado |
 | R12 | Mapeamento tabela Gold × pergunta no cabeçalho do notebook 03 |
