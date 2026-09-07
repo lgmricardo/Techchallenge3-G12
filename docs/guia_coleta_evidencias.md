@@ -409,29 +409,43 @@ ORDER BY ano, salario_mediano_pm;
 #### Q3 — Gap salarial de gênero (controlado por senioridade, 2025)
 
 ```sql
-WITH sal AS (
-    SELECT nivel, genero,
-           APPROX_PERCENTILE(salario_pm, 0.5) AS mediana,
-           COUNT(*) AS n
+WITH ranked AS (
+    SELECT nivel, genero, salario_pm,
+           ROW_NUMBER() OVER (PARTITION BY nivel, genero ORDER BY salario_pm) AS rn,
+           COUNT(*) OVER (PARTITION BY nivel, genero) AS cnt
     FROM stateofdata.silver_core
     WHERE ano = '2025'
       AND salario_pm IS NOT NULL
       AND nivel IS NOT NULL
       AND genero IN ('Masculino', 'Feminino')
+),
+sal AS (
+    SELECT nivel, genero, MAX(cnt) AS n,
+           ROUND(AVG(salario_pm), 0) AS mediana
+    FROM ranked
+    WHERE rn IN (CAST((cnt+1)/2 AS INTEGER), CAST((cnt+2)/2 AS INTEGER))
     GROUP BY nivel, genero
 )
 SELECT f.nivel,
-       ROUND(f.mediana, 0) AS mediana_feminino,
-       ROUND(m.mediana, 0) AS mediana_masculino,
-       ROUND(100.0 * (f.mediana - m.mediana) / m.mediana, 1) AS gap_pct
+       f.mediana AS mediana_feminino,
+       m.mediana AS mediana_masculino,
+       ROUND(100.0 * (f.mediana - m.mediana) / m.mediana, 1) AS gap_pct,
+       f.n AS n_feminino, m.n AS n_masculino
 FROM sal f
 JOIN sal m ON f.nivel = m.nivel AND f.genero = 'Feminino' AND m.genero = 'Masculino'
 ORDER BY m.mediana DESC;
 ```
 
+> **Nota:** mesma correção da Q2 — `APPROX_PERCENTILE` usa T-digest impreciso no Trino/Athena
+> quando `salario_pm` tem muitos valores repetidos. A query acima calcula a mediana exata via
+> `ROW_NUMBER`, por `nivel`+`genero`. Valor esperado (verificado nos microdados): Pleno/Sênior
+> mais alto do gap deve bater com mediana_feminino = 10001, mediana_masculino = 14001,
+> gap_pct = -28.6.
+
 **O que deve aparecer no print E08_athena_q3.png:**
-- Colunas: `nivel`, `mediana_feminino`, `mediana_masculino`, `gap_pct`
+- Colunas: `nivel`, `mediana_feminino`, `mediana_masculino`, `gap_pct`, `n_feminino`, `n_masculino`
 - Valores de gap negativos (salário feminino abaixo do masculino)
+- Uma linha com mediana_feminino = 10001, mediana_masculino = 14001, gap_pct = -28.6
 
 > **Nota:** `ano` é catalogado como `varchar` pelo Crawler (vem do particionamento Hive `ano=2025/`). Compare sempre com string (`'2025'`), nunca com inteiro — `WHERE ano = 2025` falha com `TYPE_MISMATCH`.
 
@@ -444,7 +458,7 @@ SELECT ano,
        ROUND(100.0 * AVG(CAST(lang_python AS DOUBLE)), 1) AS pct_python,
        ROUND(100.0 * AVG(CAST(lang_sql AS DOUBLE)), 1)    AS pct_sql,
        ROUND(100.0 * AVG(CAST(cloud_aws AS DOUBLE)), 1)   AS pct_aws,
-       COUNT(*) AS base_valida
+       COUNT(lang_python) AS base_valida
 FROM stateofdata.silver_serie_longa
 GROUP BY ano
 ORDER BY ano;
