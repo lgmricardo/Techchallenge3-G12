@@ -72,14 +72,14 @@ sal_sen = (core.filter("salario_pm is not null and nivel is not null")
            .groupBy("ano", "nivel")
            .agg(F.count("*").alias("n"),
                 F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm"),
-                F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
+                F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 grava(sal_sen.orderBy("ano", "nivel"), "gold_salary_by_seniority")
 
 sal_cargo = (core.filter("salario_pm is not null and cargo_grupo is not null")
              .groupBy("ano", "cargo_grupo")
              .agg(F.count("*").alias("n"),
                   F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm"),
-                  F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
+                  F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 grava(sal_cargo.orderBy("ano", F.desc("salario_mediano_pm")), "gold_salary_by_role")
 
 # G05b — Salário por cargo, controlado por nível Sênior (Tabela 11 / Seção 6.3) --
@@ -94,7 +94,7 @@ cargo_sen = (core.filter((F.col("nivel") == "Sênior") & F.col("cargo_grupo").is
                          & F.col("salario_pm").isNotNull())
              .groupBy("ano", "cargo_grupo")
              .agg(F.count("*").alias("n_senior"),
-                  F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm_senior")))
+                  F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm_senior")))
 cargo_ctrl = (cargo_total
               .join(cargo_sen_mais, ["ano", "cargo_grupo"], "left")
               .join(cargo_sen, ["ano", "cargo_grupo"], "left")
@@ -114,7 +114,7 @@ gen_sal = (core.filter("salario_pm is not null and nivel is not null and genero 
            .groupBy("ano", "genero", "nivel")
            .agg(F.count("*").alias("n"),
                 F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm"),
-                F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
+                F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 grava(gen_sal.orderBy("ano", "nivel", "genero"), "gold_gender_seniority_salary")
 
 # G08 — Gênero em posições de gestão -------------------------------------
@@ -135,7 +135,7 @@ gen_cargo_sen = (core.filter((F.col("nivel") == "Sênior") & F.col("cargo_grupo"
                   .groupBy("ano", "genero", "cargo_grupo")
                   .agg(F.count("*").alias("n"),
                        F.count(F.when(F.col("salario_pm").isNotNull(), 1)).alias("n_salario"),
-                       F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
+                       F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 w = Window.partitionBy("ano", "genero")
 gen_cargo_sen = gen_cargo_sen.withColumn("pct_do_genero", F.round(100 * F.col("n") / F.sum("n").over(w), 1))
 grava(gen_cargo_sen.orderBy("ano", "genero", F.desc("n")), "gold_gender_role_seniority")
@@ -196,7 +196,7 @@ reg = (core.filter(F.col("regiao").isNotNull() & (F.col("regiao") != ""))
             F.count(F.when(F.col("salario_pm").isNotNull(), 1)).alias("n_salario"),
             # media do ponto medio: discrimina dentro da faixa, onde a mediana empata (Secao 10.1)
             F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm"),
-            F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
+            F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm")))
 grava(pct_sobre_ano(reg).orderBy("ano", F.desc("n")), "gold_regions")
 
 # G12b — Regiões, controlado por nível Sênior (Seção 10.1) ----------------
@@ -207,7 +207,7 @@ reg_sen = (core.filter((F.col("nivel") == "Sênior") & F.col("regiao").isNotNull
            .groupBy("ano", "regiao")
            .agg(F.count("*").alias("n_senior"),
                 F.round(F.avg("salario_pm"), 0).alias("salario_medio_pm_senior"),
-                F.round(F.expr("percentile_approx(salario_pm, 0.5)"), 0).alias("salario_mediano_pm_senior")))
+                F.round(F.expr("percentile(salario_pm, 0.5)"), 0).alias("salario_mediano_pm_senior")))
 grava(reg_sen.orderBy("ano", "salario_medio_pm_senior"), "gold_regions_by_seniority")
 
 # G13 — Modelo de trabalho: atual vs ideal ---------------------------------
